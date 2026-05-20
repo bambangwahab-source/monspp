@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="id">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitoring Standar Pelayanan Publik</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 50: '#f0f4f8', 100: '#d9e2ec', 200: '#bcccdc', 300: '#9fb3c8', 400: '#829ab1', 500: '#627d98', 600: '#486581', 700: '#334e68', 800: '#1a3a5c', 900: '#0a1f44' },
+                        gold: { 400: '#f6c744', 500: '#d4a017', 600: '#b8860b' }
+                    }
+                }
+            }
+        }
+    </script>
+  <style>
+        body { font-family: 'DM Sans', sans-serif; }
+        .skeleton { background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/resizing_sdk.js" type="text/javascript"></script>
+ </head>
+ <body data-template-id="__page-root" class="min-h-screen bg-gray-50 dark:bg-navy-900 transition-colors duration-300">
+  <!-- Navbar -->
+  <header data-template-id="header-section" class="canva-header bg-navy-900 dark:bg-navy-900 border-b border-navy-700 shadow-lg">
+   <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between flex-wrap gap-3">
+    <div class="flex items-center gap-4">
+     <img src="https://upload.wikimedia.org/wikipedia/id/5/53/Logo_Barantin.svg" alt="Logo Barantin" class="h-12 w-12 object-contain">
+     <div>
+      <h1 data-template-id="main-title" class="canva-text text-white font-bold leading-tight"> MONITORING KELENGKAPAN PENYUSUNAN STANDAR PELAYANAN PUBLIK</h1>
+      <p data-template-id="sub-title" class="canva-text text-navy-200 text-sm">Biro Organisasi dan SDM — Badan Karantina Indonesia</p>
+     </div>
+    </div>
+    <div class="flex items-center gap-3">
+     <span id="update-date" class="text-navy-300 text-xs hidden sm:block"></span> <button id="refresh-btn" class="p-2 rounded-lg bg-navy-700 hover:bg-navy-600 text-white transition" title="Refresh"><i data-lucide="refresh-cw" style="width:18px;height:18px"></i></button> <button id="dark-toggle" class="p-2 rounded-lg bg-navy-700 hover:bg-navy-600 text-white transition" title="Dark Mode"><i data-lucide="moon" style="width:18px;height:18px"></i></button>
+    </div>
+   </div>
+  </header>
+  <main class="max-w-7xl mx-auto px-4 py-6">
+   <!-- KPI Cards -->
+   <section id="kpi-section" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+    <div data-template-id="kpi-total" class="canva-card card-hover rounded-xl p-4 bg-white dark:bg-navy-800 shadow-md border-t-4 border-navy-800">
+     <div class="flex items-center gap-2 mb-2"><i data-lucide="building-2" class="text-navy-600 dark:text-navy-300" style="width:20px;height:20px"></i><span data-template-id="kpi-total-label" class="canva-text text-xs text-gray-500 dark:text-navy-300 font-medium"></span>
+     </div>
+     <p id="kpi-total-val" class="text-2xl font-bold text-navy-900 dark:text-white">-</p>
+    </div>
+    <div data-template-id="kpi-lengkap" class="canva-card card-hover rounded-xl p-4 bg-white dark:bg-navy-800 shadow-md border-t-4 border-green-500">
+     <div class="flex items-center gap-2 mb-2"><i data-lucide="check-circle" class="text-green-600" style="width:20px;height:20px"></i><span data-template-id="kpi-lengkap-label" class="canva-text text-xs text-gray-500 dark:text-navy-300 font-medium"></span>
+     </div>
+     <p id="kpi-lengkap-val" class="text-2xl font-bold text-green-700 dark:text-green-400">-</p>
+    </div>
+    <div data-template-id="kpi-belum" class="canva-card card-hover rounded-xl p-4 bg-white dark:bg-navy-800 shadow-md border-t-4 border-red-500">
+     <div class="flex items-center gap-2 mb-2"><i data-lucide="x-circle" class="text-red-500" style="width:20px;height:20px"></i><span data-template-id="kpi-belum-label" class="canva-text text-xs text-gray-500 dark:text-navy-300 font-medium"></span>
+     </div>
+     <p id="kpi-belum-val" class="text-2xl font-bold text-red-600 dark:text-red-400">-</p>
+    </div>
+    <div data-template-id="kpi-persen" class="canva-card card-hover rounded-xl p-4 bg-white dark:bg-navy-800 shadow-md border-t-4 border-gold-500">
+     <div class="flex items-center gap-2 mb-2"><i data-lucide="percent" class="text-gold-600" style="width:20px;height:20px"></i><span data-template-id="kpi-persen-label" class="canva-text text-xs text-gray-500 dark:text-navy-300 font-medium"></span>
+     </div>
+     <p id="kpi-persen-val" class="text-2xl font-bold text-gold-600 dark:text-gold-400">-</p>
+    </div>
+    <div data-template-id="kpi-today" class="canva-card card-hover rounded-xl p-4 bg-white dark:bg-navy-800 shadow-md border-t-4 border-blue-500">
+     <div class="flex items-center gap-2 mb-2"><i data-lucide="calendar" class="text-blue-500" style="width:20px;height:20px"></i><span data-template-id="kpi-today-label" class="canva-text text-xs text-gray-500 dark:text-navy-300 font-medium"></span>
+     </div>
+     <p id="kpi-today-val" class="text-2xl font-bold text-blue-600 dark:text-blue-400">-</p>
+    </div>
+   </section><!-- Charts -->
+   <section class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4">
+     <h3 data-template-id="chart-ba-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+     <canvas id="chart-ba" height="200"></canvas>
+    </div>
+    <div class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4">
+     <h3 data-template-id="chart-sp-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+     <canvas id="chart-sp" height="200"></canvas>
+    </div>
+    <div class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4">
+     <h3 data-template-id="chart-mp-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+     <canvas id="chart-mp" height="200"></canvas>
+    </div>
+   </section>
+   <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4">
+     <h3 data-template-id="chart-status-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+     <canvas id="chart-status" height="200"></canvas>
+    </div>
+    <div class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4">
+     <h3 data-template-id="chart-ranking-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+     <canvas id="chart-ranking" height="200"></canvas>
+    </div>
+   </section><!-- Progress -->
+   <section class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4 mb-6">
+    <h3 data-template-id="progress-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+    <div class="w-full bg-gray-200 dark:bg-navy-700 rounded-full h-6 overflow-hidden">
+     <div id="progress-bar" class="h-6 rounded-full bg-gradient-to-r from-navy-800 to-gold-500 transition-all duration-700 flex items-center justify-center text-white text-xs font-bold" style="width:0%">
+      0%
+     </div>
+    </div>
+   </section><!-- Table -->
+   <section class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4 mb-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+     <h3 data-template-id="table-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white"></h3>
+     <div class="flex flex-wrap gap-2">
+      <input id="search-input" type="text" placeholder="Cari UPT..." class="px-3 py-1.5 text-sm border rounded-lg dark:bg-navy-700 dark:border-navy-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-navy-400"> <select id="filter-status" class="px-3 py-1.5 text-sm border rounded-lg dark:bg-navy-700 dark:border-navy-600 dark:text-white"> <option value="all">Semua Status</option> <option value="lengkap">Lengkap</option> <option value="belum">Belum Lengkap</option> </select> <button id="export-excel" class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-1"><i data-lucide="file-spreadsheet" style="width:14px;height:14px"></i> Excel</button> <button id="export-pdf" class="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-1"><i data-lucide="file-text" style="width:14px;height:14px"></i> PDF</button>
+     </div>
+    </div>
+    <div class="overflow-x-auto">
+     <table class="w-full text-sm">
+      <thead>
+       <tr class="bg-navy-800 text-white">
+        <th class="px-3 py-2 text-left cursor-pointer select-none" data-sort="name">No</th>
+        <th class="px-3 py-2 text-left cursor-pointer select-none" data-sort="name">Unit Pelaksana Teknis ↕</th>
+        <th class="px-3 py-2 text-center">Berita Acara</th>
+        <th class="px-3 py-2 text-center">Standar Pelayanan</th>
+        <th class="px-3 py-2 text-center">Maklumat Pelayanan</th>
+        <th class="px-3 py-2 text-center cursor-pointer select-none" data-sort="persen">% Kelengkapan ↕</th>
+       </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+     </table>
+    </div>
+    <div id="pagination" class="flex items-center justify-between mt-4 text-sm text-gray-600 dark:text-navy-300"></div>
+   </section>
+  </main>
+  <footer data-template-id="footer-section" class="canva-footer bg-navy-900 text-center py-4 border-t border-navy-700">
+   <p data-template-id="footer-text" class="canva-text text-navy-300 text-sm"></p>
+  </footer>
+  <script src="/_sdk/editing_sdk.js"></script>
+  <script>
+    (function() {
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vToreXeI3x7VJFV1MWTkWLWhMm8p-xnqbMqUuVgp8lEYPhkEjrG87k0eczM7iT0dMwkkGUmI91VhIUg/pub?output=csv';
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        const perPage = 10;
+        let sortField = 'persen';
+        let sortDir = -1;
+        let charts = {};
+
+        // Dark mode
+        const darkToggle = document.getElementById('dark-toggle');
+        if (localStorage.getItem('dark') === 'true') document.documentElement.classList.add('dark');
+        darkToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('dark', document.documentElement.classList.contains('dark'));
+        });
+
+        // Date
+        document.getElementById('update-date').textContent = 'Update: ' + new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        // Fetch & parse CSV
+        async function fetchData() {
+            try {
+                const res = await fetch(CSV_URL + '&t=' + Date.now()); // Cache-busting
+                const text = await res.text();
+                
+                Papa.parse(text, {
+                    header: false,
+                    skipEmptyLines: true,
+                    dynamicTyping: false,
+                    complete: function(results) {
+                        if (!results.data || results.data.length < 2) return;
+                        
+                        // Get header row (first row)
+                        const headers = (results.data[0] || []).map(h => (h || '').toLowerCase().trim());
+                        
+                        // Find column indices by exact matching logic
+                        let nameIdx = -1, baIdx = -1, spIdx = -1, mpIdx = -1;
+                        
+                        headers.forEach((h, idx) => {
+                            if (nameIdx === -1 && (h.includes('unit') || h.includes('upt') || h.includes('nama') || h.includes('pelaksana'))) nameIdx = idx;
+                            if (baIdx === -1 && (h === 'ba' || h.includes('berita acara') || (h.includes('berita') && h.includes('acara')))) baIdx = idx;
+                            if (spIdx === -1 && (h === 'sp' || h.includes('standar pelayanan') || (h.includes('standar') && h.includes('pelayanan')))) spIdx = idx;
+                            if (mpIdx === -1 && (h === 'mp' || h.includes('maklumat pelayanan') || (h.includes('maklumat') && h.includes('pelayanan')))) mpIdx = idx;
+                        });
+                        
+                        // Fallback: if no exact match, use positional fallback (columns 0-4)
+                        if (nameIdx === -1) nameIdx = 0;
+                        if (baIdx === -1) baIdx = 1;
+                        if (spIdx === -1) spIdx = 2;
+                        if (mpIdx === -1) mpIdx = 3;
+                        
+                        allData = [];
+                        
+                        // Process data rows (skip header at index 0)
+                        for (let i = 1; i < results.data.length; i++) {
+                            const row = results.data[i];
+                            if (!row || !row.length) continue;
+                            
+                            const name = (row[nameIdx] || '').trim();
+                            if (!name || name === '') continue;
+                            
+                            // Normalize value function
+                            const normalizeValue = (val) => {
+                                if (!val) return '';
+                                const normalized = val.toString().toLowerCase().trim();
+                                return (normalized === 'ya' || normalized === 'lengkap' || normalized === '1' || normalized === 'true') ? 'ya' : '';
+                            };
+                            
+                            const baValue = normalizeValue(row[baIdx] || '');
+                            const spValue = normalizeValue(row[spIdx] || '');
+                            const mpValue = normalizeValue(row[mpIdx] || '');
+                            
+                            allData.push({
+                                name: name,
+                                ba: baValue,
+                                sp: spValue,
+                                mp: mpValue
+                            });
+                        }
+                        
+                        // Calculate percentages and completion status
+                        allData.forEach(d => {
+                            const count = [d.ba, d.sp, d.mp].filter(v => v === 'ya').length;
+                            d.persen = Math.round((count / 3) * 100);
+                            d.lengkap = d.ba === 'ya' && d.sp === 'ya' && d.mp === 'ya';
+                        });
+                        
+                        processData();
+                    },
+                    error: function(err) {
+                        console.error('CSV parse error:', err);
+                    }
+                });
+            } catch(e) {
+                console.error('Fetch error:', e);
+            }
+        }
+
+        function processData() {
+            const total = allData.length;
+            const lengkap = allData.filter(d => d.lengkap).length;
+            const belum = total - lengkap;
+            const persen = total ? Math.round((lengkap / total) * 100) : 0;
+
+            document.getElementById('kpi-total-val').textContent = total;
+            document.getElementById('kpi-lengkap-val').textContent = lengkap;
+            document.getElementById('kpi-belum-val').textContent = belum;
+            document.getElementById('kpi-persen-val').textContent = persen + '%';
+            document.getElementById('kpi-today-val').textContent = '-';
+
+            // Progress bar
+            const pb = document.getElementById('progress-bar');
+            pb.style.width = persen + '%';
+            pb.textContent = persen + '%';
+
+            renderCharts(lengkap, belum);
+            applyFilters();
+        }
+
+        function renderCharts(lengkap, belum) {
+            const darkMode = document.documentElement.classList.contains('dark');
+            const textColor = darkMode ? '#e2e8f0' : '#1a3a5c';
+            Chart.defaults.color = textColor;
+
+            const baYa = allData.filter(d => d.ba === 'ya').length;
+            const spYa = allData.filter(d => d.sp === 'ya').length;
+            const mpYa = allData.filter(d => d.mp === 'ya').length;
+            const total = allData.length;
+
+            function pie(id, ya, label) {
+                if (charts[id]) charts[id].destroy();
+                charts[id] = new Chart(document.getElementById(id), {
+                    type: 'doughnut',
+                    data: { labels: ['Ya', 'Tidak'], datasets: [{ data: [ya, total - ya], backgroundColor: ['#16a34a', '#dc2626'] }] },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+            pie('chart-ba', baYa);
+            pie('chart-sp', spYa);
+            pie('chart-mp', mpYa);
+
+            if (charts['chart-status']) charts['chart-status'].destroy();
+            charts['chart-status'] = new Chart(document.getElementById('chart-status'), {
+                type: 'doughnut',
+                data: { labels: ['Lengkap', 'Belum Lengkap'], datasets: [{ data: [lengkap, belum], backgroundColor: ['#16a34a', '#dc2626'] }] },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Top 10 ranking - only complete UPTs (100%)
+            const top10 = [...allData].filter(d => d.persen === 100).sort((a, b) => b.persen - a.persen).slice(0, 10);
+            if (charts['chart-ranking']) charts['chart-ranking'].destroy();
+            charts['chart-ranking'] = new Chart(document.getElementById('chart-ranking'), {
+                type: 'bar',
+                data: {
+                    labels: top10.map(d => d.name.length > 25 ? d.name.substring(0, 25) + '…' : d.name),
+                    datasets: [{ label: '% Kelengkapan', data: top10.map(d => d.persen), backgroundColor: '#16a34a', borderRadius: 4 }]
+                },
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    scales: { x: { max: 100 } }, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: { 
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.x + '%';
+                                }
+                            }
+                        }
+                    } 
+                }
+            });
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const status = document.getElementById('filter-status').value;
+            filteredData = allData.filter(d => {
+                if (search && !d.name.toLowerCase().includes(search)) return false;
+                if (status === 'lengkap' && !d.lengkap) return false;
+                if (status === 'belum' && d.lengkap) return false;
+                return true;
+            });
+            filteredData.sort((a, b) => sortDir * (a[sortField] > b[sortField] ? 1 : a[sortField] < b[sortField] ? -1 : 0));
+            currentPage = 1;
+            renderTable();
+        }
+
+        function renderTable() {
+            const start = (currentPage - 1) * perPage;
+            const pageData = filteredData.slice(start, start + perPage);
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = pageData.map((d, i) => {
+                const badge = (v) => v === 'ya' ? '<span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Ya</span>' : '<span class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Tidak</span>';
+                const pColor = d.persen === 100 ? 'text-green-600' : d.persen >= 50 ? 'text-yellow-600' : 'text-red-600';
+                return `<tr class="border-b dark:border-navy-700 hover:bg-gray-50 dark:hover:bg-navy-700 transition">
+                    <td class="px-3 py-2">${start + i + 1}</td>
+                    <td class="px-3 py-2 font-medium text-navy-800 dark:text-white">${d.name}</td>
+                    <td class="px-3 py-2 text-center">${badge(d.ba)}</td>
+                    <td class="px-3 py-2 text-center">${badge(d.sp)}</td>
+                    <td class="px-3 py-2 text-center">${badge(d.mp)}</td>
+                    <td class="px-3 py-2 text-center font-bold ${pColor}">${d.persen}%</td>
+                </tr>`;
+            }).join('');
+
+            const totalPages = Math.ceil(filteredData.length / perPage);
+            document.getElementById('pagination').innerHTML = `
+                <span>Menampilkan ${start + 1}-${Math.min(start + perPage, filteredData.length)} dari ${filteredData.length}</span>
+                <div class="flex gap-1">
+                    <button onclick="window.__prevPage()" class="px-3 py-1 rounded border dark:border-navy-600 ${currentPage <= 1 ? 'opacity-40' : 'hover:bg-gray-100 dark:hover:bg-navy-700'}" ${currentPage <= 1 ? 'disabled' : ''}>←</button>
+                    <button onclick="window.__nextPage()" class="px-3 py-1 rounded border dark:border-navy-600 ${currentPage >= totalPages ? 'opacity-40' : 'hover:bg-gray-100 dark:hover:bg-navy-700'}" ${currentPage >= totalPages ? 'disabled' : ''}>→</button>
+                </div>`;
+        }
+
+        window.__prevPage = () => { currentPage--; renderTable(); };
+        window.__nextPage = () => { currentPage++; renderTable(); };
+
+        // Sort
+        document.querySelectorAll('[data-sort]').forEach(th => {
+            th.addEventListener('click', () => {
+                const f = th.dataset.sort;
+                if (sortField === f) sortDir *= -1; else { sortField = f; sortDir = 1; }
+                applyFilters();
+            });
+        });
+
+        // Search & filter
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+        document.getElementById('filter-status').addEventListener('change', applyFilters);
+
+        // Export Excel
+        document.getElementById('export-excel').addEventListener('click', () => {
+            const ws = XLSX.utils.json_to_sheet(filteredData.map(d => ({ 'Unit Pelaksana Teknis': d.name, 'Berita Acara': d.ba, 'Standar Pelayanan': d.sp, 'Maklumat Pelayanan': d.mp, '% Kelengkapan': d.persen })));
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Data');
+            XLSX.writeFile(wb, 'monitoring_spp.xlsx');
+        });
+
+        // Export PDF
+        document.getElementById('export-pdf').addEventListener('click', () => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.setFontSize(12);
+            doc.text('Monitoring Kelengkapan Standar Pelayanan Publik', 14, 15);
+            doc.autoTable({
+                startY: 25,
+                head: [['No', 'UPT', 'BA', 'SP', 'MP', '%']],
+                body: filteredData.map((d, i) => [i + 1, d.name, d.ba, d.sp, d.mp, d.persen + '%']),
+                styles: { fontSize: 8 }
+            });
+            doc.save('monitoring_spp.pdf');
+        });
+
+        // Refresh
+        document.getElementById('refresh-btn').addEventListener('click', fetchData);
+
+        // Auto-refresh every 5 minutes
+        setInterval(fetchData, 5 * 60 * 1000);
+
+        // Init
+        lucide.createIcons();
+        fetchData();
+    })();
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9feb7b86d334582b',t:'MTc3OTI4MTU4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
