@@ -98,16 +98,16 @@
    </section>
    <section class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
     <div class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4">
-     <h3 data-template-id="chart-status-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+     <h3 data-template-id="chart-status-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3">Status Kelengkapan</h3>
      <canvas id="chart-status" height="200"></canvas>
     </div>
     <div class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4">
-     <h3 data-template-id="chart-ranking-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+     <h3 data-template-id="chart-ranking-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3">Top 10 UPT Terlengkap</h3>
      <canvas id="chart-ranking" height="200"></canvas>
     </div>
    </section><!-- Progress -->
    <section class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4 mb-6">
-    <h3 data-template-id="progress-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3"></h3>
+    <h3 data-template-id="progress-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white mb-3">Capaian Nasional</h3>
     <div class="w-full bg-gray-200 dark:bg-navy-700 rounded-full h-6 overflow-hidden">
      <div id="progress-bar" class="h-6 rounded-full bg-gradient-to-r from-navy-800 to-gold-500 transition-all duration-700 flex items-center justify-center text-white text-xs font-bold" style="width:0%">
       0%
@@ -116,7 +116,7 @@
    </section><!-- Table -->
    <section class="bg-white dark:bg-navy-800 rounded-xl shadow-md p-4 mb-6">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-     <h3 data-template-id="table-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white"></h3>
+     <h3 data-template-id="table-title" class="canva-text text-sm font-semibold text-navy-800 dark:text-white">Tabel Monitoring</h3>
      <div class="flex flex-wrap gap-2">
       <input id="search-input" type="text" placeholder="Cari UPT..." class="px-3 py-1.5 text-sm border rounded-lg dark:bg-navy-700 dark:border-navy-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-navy-400"> <select id="filter-status" class="px-3 py-1.5 text-sm border rounded-lg dark:bg-navy-700 dark:border-navy-600 dark:text-white"> <option value="all">Semua Status</option> <option value="lengkap">Lengkap</option> <option value="belum">Belum Lengkap</option> </select> <button id="export-excel" class="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center gap-1"><i data-lucide="file-spreadsheet" style="width:14px;height:14px"></i> Excel</button> <button id="export-pdf" class="px-3 py-1.5 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-1"><i data-lucide="file-text" style="width:14px;height:14px"></i> PDF</button>
      </div>
