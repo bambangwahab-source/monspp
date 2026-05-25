@@ -210,8 +210,13 @@
                             // Normalize value function
                             const normalizeValue = (val) => {
                                 if (!val) return '';
-                                const normalized = val.toString().toLowerCase().trim();
-                                return (normalized === 'ya' || normalized === 'lengkap' || normalized === '1' || normalized === 'true') ? 'ya' : '';
+ const normalized = val
+        .toString()
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+
+    return normalized === 'ya' ? 'ya' : '';
                             };
                             
                             const baValue = normalizeValue(row[baIdx] || '');
